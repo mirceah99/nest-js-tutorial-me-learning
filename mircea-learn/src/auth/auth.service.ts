@@ -17,16 +17,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new ForbiddenException('incorect credentials!');
+      throw new ForbiddenException('incorrect credentials!');
     }
 
-    //check passeord
+    //check password
     const correctPassword = await argon.verify(user.passwordHash, dto.password);
 
-    if (!correctPassword) throw new ForbiddenException('incorect credentials!');
-    // everithing right send back user
+    if (!correctPassword)
+      throw new ForbiddenException('incorrect credentials!');
+    // everything right send back user
 
-    return this.signTocken(user.id, user.email);
+    return this.signToken(user.id, user.email);
   }
   async signup(dto: AuthDto) {
     try {
@@ -44,19 +45,19 @@ export class AuthService {
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(`email ${dto.email} already userd!`);
+          throw new ForbiddenException(`email ${dto.email} already used!`);
         }
       }
       throw error;
     }
   }
-  async signTocken(
+  async signToken(
     userId: number,
     userEmail: string,
-  ): Promise<{ acces_tocken: string }> {
+  ): Promise<{ access_token: string }> {
     const payLoad = { sub: userId, email: userEmail };
     return {
-      acces_tocken: await this.jwt.signAsync(payLoad, {
+      access_token: await this.jwt.signAsync(payLoad, {
         secret: process.env.SECRET,
         expiresIn: '15m',
       }),
